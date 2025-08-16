@@ -18,9 +18,7 @@ def apply_rules(input_string):
 
 def iterate_lattice(lattice):
     new_lattice = []
-    # Add padding zeros at the beginning
-    for _ in range(len(lattice) // 2):
-        new_lattice.append("0")
+    new_lattice.append("0")
     
     for i in range(len(lattice)):
         left = lattice[i - 1] if i > 0 else '0'
@@ -29,13 +27,9 @@ def iterate_lattice(lattice):
         neighborhood = left + center + right
         new_lattice.append(apply_rules(neighborhood))
     
-    # Add padding zeros at the end
-    for _ in range(len(lattice) // 2):
-        new_lattice.append("0")
-    
     return ''.join(new_lattice)
 
 lattice = "010"
-for _ in range(5):
+for _ in range(50):
     print(lattice)
     lattice = iterate_lattice(lattice)
