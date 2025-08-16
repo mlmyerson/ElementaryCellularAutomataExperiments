@@ -40,15 +40,23 @@ def create_number_plot():
     with open("numbers.txt", "r") as f:
         numbers = [int(line.strip()) for line in f.readlines() if line.strip()]
     
-    # Create y-axis from 0 to n (generation numbers)
-    numberSpace = [i**2 for i in range(len(numbers))]
+    # Sort the unique numbers for x-axis
+    numbers.sort()
+    
+    # Create y-axis values (just the numbers themselves, or could be index positions)
+    y_values = numbers  # Plot the numbers against themselves
+    
+    # find max number
+    max_num = max(numbers)
     
     plt.figure(figsize=(12, 6))
-    plt.plot(numbers, numberSpace, 'b-', linewidth=1.5)
-    plt.title('Rule 110 - Integers computed over time')
-    plt.xlabel('Integer Value')
-    plt.ylabel('Possible Integers')
-    plt.ylim(0, len(numbers) ** 2)
+    plt.plot(numbers, y_values, 'bo-', linewidth=1.5, markersize=4)
+    plt.title('Unique Numbers Found in Rule 110 Patterns')
+    plt.xlabel('Unique Numbers Found')
+    plt.ylabel('Value')
+    plt.xlim(0, max_num)
+    plt.yscale('log')  # Use logarithmic scale for y-axis
+    # plt.xscale('log')  # Use logarithmic scale for x-axis too
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('numbers_plot.png', dpi=300, bbox_inches='tight')
