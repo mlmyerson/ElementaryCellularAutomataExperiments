@@ -1,0 +1,3 @@
+slide a window from 3 to len(row) / 2 across each iteration
+track the coverage of unique integers found 
+compute coverage: (number of distinct windows seen up to time t) / 2^n
