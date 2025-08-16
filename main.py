@@ -31,5 +31,6 @@ def iterate_lattice(lattice):
 
 lattice = "010"
 for _ in range(50):
-    print(lattice)
+    # print(lattice)
+    print(int (lattice, 2)) 
     lattice = iterate_lattice(lattice)
