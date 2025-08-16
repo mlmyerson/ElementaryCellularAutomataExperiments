@@ -9,17 +9,18 @@ rule = {0: 0,
         }
 
 def neighborhood(latticePos, lattice):
+    # Get bit at position (latticePos-1, latticePos, latticePos+1)
     left = 0
-    center = 0
+    if latticePos > 0:
+        left = (lattice >> (latticePos - 1)) & 1
+    
+    center = (lattice >> latticePos) & 1
+    
     right = 0
-    for pos in range(latticePos, 3):
-        if pos > 0:
-            left = lattice & pos-1
-        center = lattice & pos
-        right = 0
-        if pos < lattice.bit_length():
-            right = lattice & pos+1
-    print(f"Neighborhood at position {latticePos}: left={left}, center={center}, right={right}")
+    if latticePos < lattice.bit_length() - 1:
+        right = (lattice >> (latticePos + 1)) & 1
+    
+    # print(f"Neighborhood at position {latticePos}: left={left}, center={center}, right={right}")
     return (left, center, right)
         
 def buildRuleKey(left, center, right):
@@ -27,14 +28,12 @@ def buildRuleKey(left, center, right):
     rule_key |= left << 2
     rule_key |= center << 1
     rule_key |= right << 0
-    # print(f"Rule key: {rule_key}") 
     return rule_key
 
 #apply rules across the lattice
 def applyRule(lattice):
     new_lattice = 0
     for pos in range(lattice.bit_length()):
-        print(pos)
         left, right, center = neighborhood(pos, lattice)
         rule_key = buildRuleKey(left, center, right)
         new_bit = rule[rule_key]
@@ -42,12 +41,11 @@ def applyRule(lattice):
     # Add padding: shift left by 1 to append 0, then add space for prepending
     new_lattice = new_lattice << 1  # Append 0 bit on the right
     # Prepending 0 bit on the left is automatic since we're not setting that bit
-    # print(f"{lattice:b}")  
     
     return new_lattice
 
 
 lattice = 0b010
 for _ in range(4):
-    # print(f"{lattice:b}")  
+    print(f"0{lattice:b}")  
     lattice = applyRule(lattice)
