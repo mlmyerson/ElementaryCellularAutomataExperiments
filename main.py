@@ -30,7 +30,14 @@ def iterate_lattice(lattice):
     return ''.join(new_lattice)
 
 lattice = "010"
+picFile = open("picture.txt", "w")
+numFile = open("numbers.txt", "w")
 for _ in range(50):
+    picFile.write(lattice + "\n")
     # print(lattice)
-    print(int (lattice, 2)) 
+    numFile.write(str(int(lattice, 2)) + "\n")
+    # print(int (lattice, 2)) 
     lattice = iterate_lattice(lattice)
+
+picFile.close()
+numFile.close()
