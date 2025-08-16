@@ -1,3 +1,6 @@
+I have the basic code for generating rule 110 and generating the plots,
+But I still need to do the stuff below
+
 slide a window from 3 to len(row) / 2 across each iteration
 track the coverage of unique integers found 
 compute coverage: (number of distinct windows seen up to time t) / 2^n
