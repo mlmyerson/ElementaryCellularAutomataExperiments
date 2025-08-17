@@ -4,7 +4,7 @@
     "description": "Specific window sizes to analyze for pattern coverage"
   },
   "generations": {
-    "count": 1000,
+    "count": 50,
     "description": "Number of generations to run the cellular automaton"
   },
   "rules": {
@@ -19,7 +19,7 @@
     "description": "Rule lookup table for cellular automaton (Rule 110 by default)"
   },
   "initial_state": {
-    "pattern": "010",
+    "pattern": "1",
     "description": "Initial lattice configuration"
   },
   "output": {

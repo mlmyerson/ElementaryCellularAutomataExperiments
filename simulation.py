@@ -26,7 +26,6 @@ def apply_rules(input_string):
 
 def iterate_lattice(lattice):
     new_lattice = []
-    new_lattice.append("0")
     
     for i in range(len(lattice)):
         left = lattice[i - 1] if i > 0 else '0'
@@ -44,9 +43,21 @@ def find_coverage_by_window_size(lattice, max_window_size):
 # Get configuration from settings
 window_sizes = settings["window_sizes"]["sizes"]
 num_generations = settings["generations"]["count"]
-initial_lattice = settings["initial_state"]["pattern"]
+initial_pattern = settings["initial_state"]["pattern"]
 pic_filename = settings["output"]["picture_file"]
 num_filename = settings["output"]["numbers_file"]
+
+# Calculate lattice width needed for growth over all generations
+# Rule 110 can expand in both directions, so we need padding on both sides
+# Each generation can potentially add cells, so we add extra padding
+pattern_length = len(initial_pattern)
+padding_per_side = num_generations + 10  # Extra padding for safety
+total_width = pattern_length + (2 * padding_per_side)
+
+# Create initial lattice with pattern centered
+padding_left = padding_per_side
+padding_right = total_width - pattern_length - padding_left
+initial_lattice = ('0' * padding_left) + initial_pattern + ('0' * padding_right)
 
 found_numbers = set()
 cumulative_sets = {n: set() for n in window_sizes}  # S_n(t) for each window size
