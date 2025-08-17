@@ -64,7 +64,9 @@ def create_combined_visualization():
     ax1.set_ylabel('Generation')
     
     # Bottom plot: Coverage over time for each window size
-    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    # Use a color map to handle up to 10 window sizes nicely
+    colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    
     for i, n in enumerate(window_sizes):
         if n in coverage_data and coverage_data[n]:
             color = colors[i % len(colors)]
@@ -72,12 +74,12 @@ def create_combined_visualization():
                     'o-', linewidth=1.5, markersize=2, color=color, 
                     label=f'n={n}', alpha=0.8)
     
-    ax2.set_title('Pattern Coverage Over Time by Window Size')
+    ax2.set_title('Pattern Coverage Over Time by Window Size (n=1 to 10)')
     ax2.set_xlabel('Time Step (Generation)')
     ax2.set_ylabel('Fractional Coverage |S_n(t)| / 2^n')
     ax2.set_ylim(0, 1)
     ax2.grid(True, alpha=0.3)
-    ax2.legend()
+    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     
     plt.tight_layout()
     plt.savefig('combined_visualization.png', dpi=300, bbox_inches='tight')

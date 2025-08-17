@@ -38,8 +38,8 @@ rules = {
 }
 
 found_numbers = set()
-# Track coverage for specific window sizes
-window_sizes = [3, 4, 5, 8, 12]  # Specific n values to track
+# Track coverage for window sizes 1 to 10
+window_sizes = list(range(1, 11))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 cumulative_sets = {n: set() for n in window_sizes}  # S_n(t) for each window size
 coverage_history = {n: [] for n in window_sizes}  # Coverage over time for each n
 
@@ -50,7 +50,7 @@ numFile = open("numbers.txt", "w")
 for generation in range(50):
     picFile.write(lattice + "\n")
     
-    # For each specific window size, find new patterns and update cumulative set
+    # For each window size, find new patterns and update cumulative set
     for n in window_sizes:
         if n <= len(lattice):  # Only process if window fits in lattice
             # Slide window of size n across the current lattice
