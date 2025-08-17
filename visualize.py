@@ -74,8 +74,10 @@ def create_combined_visualization(settings_file="settings.json"):
     
     # Top plot: ECA visualization
     im = ax1.imshow(grid, cmap='binary', aspect='auto')
-    rule_name = f"Rules: {dict(settings['rules'])}"
-    ax1.set_title(f'Elementary Cellular Automaton Pattern - {rule_name}')
+    # Convert rules dictionary to rule number (binary to decimal)
+    rule_binary = ''.join([settings['rules'][str(i)] for i in range(7, -1, -1)])
+    rule_name = int(rule_binary, 2)
+    ax1.set_title(f'Elementary Cellular Automaton Pattern - Rule {rule_name}')
     ax1.set_xlabel('Cell Position')
     ax1.set_ylabel('Generation')
     
@@ -109,6 +111,5 @@ if __name__ == "__main__":
     else:
         settings_file = "settings.json"
     
-    print("Creating Rule 110 visualizations...")
     create_combined_visualization(settings_file)
     print("Visualization saved as 'combined_visualization.png'")
