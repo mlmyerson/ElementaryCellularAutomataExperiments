@@ -23,49 +23,8 @@ def iterate_lattice(lattice):
     return ''.join(new_lattice)
 
 def find_coverage_by_window_size(lattice, max_window_size):
-    """Find coverage for each window size"""
-    coverage_results = {}
-    
-    for window_size in range(1, max_window_size + 1):
-        found_numbers = set()
-        max_possible = 2 ** window_size
-        
-        # Slide window across the lattice
-        for i in range(len(lattice) - window_size + 1):
-            window_bits = lattice[i:i + window_size]
-            number = int(window_bits, 2)
-            found_numbers.add(number)
-        
-        coverage = len(found_numbers) / max_possible
-        coverage_results[window_size] = {
-            'coverage': coverage,
-            'found': len(found_numbers),
-            'possible': max_possible,
-            'complete': len(found_numbers) == max_possible
-        }
-            
-    return coverage_results
-
-def create_fraction_plot():
-    """Create a plot of the fractional coverage over time"""
-    # Read the coverage fractions file
-    with open("numbers.txt", "r") as f:
-        coverage_fractions = [float(line.strip()) for line in f.readlines() if line.strip()]
-    
-    # Create time steps (x-axis)
-    time_steps = list(range(len(coverage_fractions)))
-    
-    plt.figure(figsize=(12, 6))
-    plt.plot(time_steps, coverage_fractions, 'bo-', linewidth=1.5, markersize=4)
-    plt.title('Number Space Coverage Over Time in Rule 110 Patterns')
-    plt.xlabel('Time Step (Generation)')
-    plt.ylabel('Fractional Coverage (0 to 1)')
-    plt.xlim(0, len(coverage_fractions))
-    plt.ylim(0, 1)
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig('numbers_plot.png', dpi=300, bbox_inches='tight')
-    plt.show()
+    """Find coverage for each window size - keeping for potential future use"""
+    pass
 
 rules = {
     0: "0",
@@ -111,4 +70,3 @@ for coverage in all_coverage_fractions:
 
 picFile.close()
 numFile.close()
-create_fraction_plot()
