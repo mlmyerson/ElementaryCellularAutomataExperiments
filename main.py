@@ -22,41 +22,46 @@ def iterate_lattice(lattice):
     
     return ''.join(new_lattice)
 
-def find_numbers(lattice):
-    out = set()
-    max_window = len(lattice)
-    window = 0
-    while window <= max_window:
-        for i in range(window):
-            bits = lattice[i:i + window]
-            found = int(bits, 2)
-            out.add(found)
-        window += 1
-    return out
+def find_coverage_by_window_size(lattice, max_window_size):
+    """Find coverage for each window size"""
+    coverage_results = {}
+    
+    for window_size in range(1, max_window_size + 1):
+        found_numbers = set()
+        max_possible = 2 ** window_size
+        
+        # Slide window across the lattice
+        for i in range(len(lattice) - window_size + 1):
+            window_bits = lattice[i:i + window_size]
+            number = int(window_bits, 2)
+            found_numbers.add(number)
+        
+        coverage = len(found_numbers) / max_possible
+        coverage_results[window_size] = {
+            'coverage': coverage,
+            'found': len(found_numbers),
+            'possible': max_possible,
+            'complete': len(found_numbers) == max_possible
+        }
+            
+    return coverage_results
 
-def create_number_plot():
-    """Create a plot of the binary numbers over time"""
-    # Read the numbers file
+def create_fraction_plot():
+    """Create a plot of the fractional coverage over time"""
+    # Read the coverage fractions file
     with open("numbers.txt", "r") as f:
-        numbers = [int(line.strip()) for line in f.readlines() if line.strip()]
+        coverage_fractions = [float(line.strip()) for line in f.readlines() if line.strip()]
     
-    # Sort the unique numbers for x-axis
-    numbers.sort()
-    
-    # Create y-axis values (just the numbers themselves, or could be index positions)
-    y_values = numbers  # Plot the numbers against themselves
-    
-    # find max number
-    max_num = max(numbers)
+    # Create time steps (x-axis)
+    time_steps = list(range(len(coverage_fractions)))
     
     plt.figure(figsize=(12, 6))
-    plt.plot(numbers, y_values, 'bo-', linewidth=1.5, markersize=4)
-    plt.title('Unique Numbers Found in Rule 110 Patterns')
-    plt.xlabel('Unique Numbers Found')
-    plt.ylabel('Value')
-    plt.xlim(0, max_num)
-    plt.yscale('log')  # Use logarithmic scale for y-axis
-    # plt.xscale('log')  # Use logarithmic scale for x-axis too
+    plt.plot(time_steps, coverage_fractions, 'bo-', linewidth=1.5, markersize=4)
+    plt.title('Number Space Coverage Over Time in Rule 110 Patterns')
+    plt.xlabel('Time Step (Generation)')
+    plt.ylabel('Fractional Coverage (0 to 1)')
+    plt.xlim(0, len(coverage_fractions))
+    plt.ylim(0, 1)
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('numbers_plot.png', dpi=300, bbox_inches='tight')
@@ -74,19 +79,36 @@ rules = {
 }
 
 found_numbers = set()
+all_coverage_fractions = []  # Store overall coverage fraction for each generation
 lattice = "010"
 picFile = open("picture.txt", "w")
 numFile = open("numbers.txt", "w")
-for _ in range(50):
-    # picFile.write(lattice + "\n")
-    # the total integer each row makes
-    # numFile.write(str(int(lattice, 2)) + "\n")
-    found_numbers.update(find_numbers(lattice))
+
+for generation in range(50):
+    picFile.write(lattice + "\n")
+    
+    # Find ALL unique numbers across all window sizes for this generation
+    all_unique_numbers = set()
+    max_window = len(lattice)
+    
+    for window_size in range(1, max_window + 1):
+        # Slide window across the lattice
+        for i in range(len(lattice) - window_size + 1):
+            window_bits = lattice[i:i + window_size]
+            number = int(window_bits, 2)
+            all_unique_numbers.add(number)
+    
+    # Calculate overall coverage: unique numbers found / total possible numbers
+    total_possible = 2 ** len(lattice)
+    overall_coverage = len(all_unique_numbers) / total_possible
+    all_coverage_fractions.append(overall_coverage)
+    
     lattice = iterate_lattice(lattice)
 
-for num in found_numbers:
-    numFile.write(str(num) + "\n")
+# Write overall coverage fractions to file
+for coverage in all_coverage_fractions:
+    numFile.write(str(coverage) + "\n")
 
 picFile.close()
 numFile.close()
-create_number_plot()
+create_fraction_plot()
