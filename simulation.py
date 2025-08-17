@@ -48,8 +48,6 @@ pic_filename = settings["output"]["picture_file"]
 num_filename = settings["output"]["numbers_file"]
 
 # Calculate lattice width needed for growth over all generations
-# Rule 110 can expand in both directions, so we need padding on both sides
-# Each generation can potentially add cells, so we add extra padding
 pattern_length = len(initial_pattern)
 padding_per_side = num_generations + 10  # Extra padding for safety
 total_width = pattern_length + (2 * padding_per_side)
@@ -79,7 +77,7 @@ for generation in range(num_generations):
                 if len(window_bits) == n:  # Ensure we have a complete window
                     cumulative_sets[n].add(window_bits)  # Add pattern to S_n(t)
         
-        # Calculate coverage for this window size: |S_n(t)| / 2^n
+        # Calculate integer coverage for this window size
         total_possible = 2 ** n
         coverage = len(cumulative_sets[n]) / total_possible
         coverage_history[n].append(coverage)

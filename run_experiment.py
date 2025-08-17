@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Experiment runner for Rule 110 (and other cellular automata) analysis.
+Experiment runner for Rule Cellular Automata analysis.
 Usage: python run_experiment.py [settings_file]
 """
 import sys
