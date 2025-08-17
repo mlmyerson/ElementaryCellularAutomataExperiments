@@ -38,7 +38,11 @@ rules = {
 }
 
 found_numbers = set()
-all_coverage_fractions = []  # Store overall coverage fraction for each generation
+# Track coverage for specific window sizes
+window_sizes = [3, 4, 5, 8, 12]  # Specific n values to track
+cumulative_sets = {n: set() for n in window_sizes}  # S_n(t) for each window size
+coverage_history = {n: [] for n in window_sizes}  # Coverage over time for each n
+
 lattice = "010"
 picFile = open("picture.txt", "w")
 numFile = open("numbers.txt", "w")
@@ -46,27 +50,33 @@ numFile = open("numbers.txt", "w")
 for generation in range(50):
     picFile.write(lattice + "\n")
     
-    # Find ALL unique numbers across all window sizes for this generation
-    all_unique_numbers = set()
-    max_window = len(lattice)
-    
-    for window_size in range(1, max_window + 1):
-        # Slide window across the lattice
-        for i in range(len(lattice) - window_size + 1):
-            window_bits = lattice[i:i + window_size]
-            number = int(window_bits, 2)
-            all_unique_numbers.add(number)
-    
-    # Calculate overall coverage: unique numbers found / total possible numbers
-    total_possible = 2 ** len(lattice)
-    overall_coverage = len(all_unique_numbers) / total_possible
-    all_coverage_fractions.append(overall_coverage)
+    # For each specific window size, find new patterns and update cumulative set
+    for n in window_sizes:
+        if n <= len(lattice):  # Only process if window fits in lattice
+            # Slide window of size n across the current lattice
+            for i in range(len(lattice) - n + 1):
+                window_bits = lattice[i:i + n]
+                if len(window_bits) == n:  # Ensure we have a complete window
+                    cumulative_sets[n].add(window_bits)  # Add pattern to S_n(t)
+        
+        # Calculate coverage for this window size: |S_n(t)| / 2^n
+        total_possible = 2 ** n
+        coverage = len(cumulative_sets[n]) / total_possible
+        coverage_history[n].append(coverage)
     
     lattice = iterate_lattice(lattice)
 
-# Write overall coverage fractions to file
-for coverage in all_coverage_fractions:
-    numFile.write(str(coverage) + "\n")
+# Write coverage data to file
+# Format: each line has coverage for all window sizes at that generation
+numFile.write("# Generation coverage for window sizes: " + ",".join(map(str, window_sizes)) + "\n")
+for generation in range(50):
+    coverage_line = []
+    for n in window_sizes:
+        if generation < len(coverage_history[n]):
+            coverage_line.append(str(coverage_history[n][generation]))
+        else:
+            coverage_line.append("0")  # If window size was too large for early generations
+    numFile.write(",".join(coverage_line) + "\n")
 
 picFile.close()
 numFile.close()

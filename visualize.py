@@ -18,21 +18,41 @@ def create_eca_visualization():
     return grid
 
 def create_fraction_plot():
-    """Create a plot of the fractional coverage over time"""
+    """Create a plot of the fractional coverage over time for specific window sizes"""
     # Read the coverage fractions file
     with open("numbers.txt", "r") as f:
-        coverage_fractions = [float(line.strip()) for line in f.readlines() if line.strip()]
+        lines = [line.strip() for line in f.readlines() if line.strip()]
     
-    # Create time steps (x-axis)
-    time_steps = list(range(len(coverage_fractions)))
+    # Parse header to get window sizes
+    header_line = lines[0]
+    if header_line.startswith("#"):
+        window_sizes_str = header_line.split(": ")[1]
+        window_sizes = [int(x) for x in window_sizes_str.split(",")]
+        data_lines = lines[1:]
+    else:
+        # Fallback if no header
+        window_sizes = [3, 4, 5, 8, 12]
+        data_lines = lines
     
-    return time_steps, coverage_fractions
+    # Parse coverage data
+    coverage_data = {n: [] for n in window_sizes}
+    time_steps = []
+    
+    for generation, line in enumerate(data_lines):
+        if line:
+            coverages = [float(x) for x in line.split(",")]
+            time_steps.append(generation)
+            for i, n in enumerate(window_sizes):
+                if i < len(coverages):
+                    coverage_data[n].append(coverages[i])
+    
+    return time_steps, coverage_data, window_sizes
 
 def create_combined_visualization():
     """Create a combined visualization showing both the ECA pattern and coverage"""
     # Get data from files
     grid = create_eca_visualization()
-    time_steps, coverage_fractions = create_fraction_plot()
+    time_steps, coverage_data, window_sizes = create_fraction_plot()
     
     # Create combined plot
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
@@ -43,14 +63,21 @@ def create_combined_visualization():
     ax1.set_xlabel('Cell Position')
     ax1.set_ylabel('Generation')
     
-    # Bottom plot: Coverage over time
-    ax2.plot(time_steps, coverage_fractions, 'bo-', linewidth=1.5, markersize=3)
-    ax2.set_title('Number Space Coverage Over Time')
+    # Bottom plot: Coverage over time for each window size
+    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    for i, n in enumerate(window_sizes):
+        if n in coverage_data and coverage_data[n]:
+            color = colors[i % len(colors)]
+            ax2.plot(time_steps[:len(coverage_data[n])], coverage_data[n], 
+                    'o-', linewidth=1.5, markersize=2, color=color, 
+                    label=f'n={n}', alpha=0.8)
+    
+    ax2.set_title('Pattern Coverage Over Time by Window Size')
     ax2.set_xlabel('Time Step (Generation)')
-    ax2.set_ylabel('Fractional Coverage (0 to 1)')
-    ax2.set_xlim(0, len(coverage_fractions))
+    ax2.set_ylabel('Fractional Coverage |S_n(t)| / 2^n')
     ax2.set_ylim(0, 1)
     ax2.grid(True, alpha=0.3)
+    ax2.legend()
     
     plt.tight_layout()
     plt.savefig('combined_visualization.png', dpi=300, bbox_inches='tight')
