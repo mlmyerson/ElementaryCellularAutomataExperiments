@@ -42,7 +42,7 @@ def find_coverage_by_window_size(lattice, max_window_size):
     pass
 
 # Get configuration from settings
-window_sizes = list(range(settings["window_sizes"]["min"], settings["window_sizes"]["max"] + 1))
+window_sizes = settings["window_sizes"]["sizes"]
 num_generations = settings["generations"]["count"]
 initial_lattice = settings["initial_state"]["pattern"]
 pic_filename = settings["output"]["picture_file"]

@@ -1,8 +1,7 @@
 {
   "window_sizes": {
-    "min": 1,
-    "max": 10,
-    "description": "Range of window sizes to analyze (from min to max inclusive)"
+    "sizes": [1, 2, 3, 4, 5, 8, 10, 12],
+    "description": "Specific window sizes to analyze for pattern coverage"
   },
   "generations": {
     "count": 50,
