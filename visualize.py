@@ -93,7 +93,7 @@ def create_combined_visualization(settings_file="settings.json"):
     window_range = f"n={min(window_sizes)} to {max(window_sizes)}"
     ax2.set_title(f'Pattern Coverage Over Time by Window Size ({window_range})')
     ax2.set_xlabel('Time Step (Generation)')
-    ax2.set_ylabel('Fractional Coverage |S_n(t)| / 2^n')
+    ax2.set_ylabel('Fractional Coverage of 2^n')
     ax2.set_ylim(0, 1)
     ax2.grid(True, alpha=0.3)
     ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
