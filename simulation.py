@@ -1,5 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+import sys
+
+# Load settings from JSON file
+def load_settings(settings_file="settings.json"):
+    with open(settings_file, "r") as f:
+        return json.load(f)
+
+# Get settings file from command line argument or use default
+if len(sys.argv) > 1:
+    settings_file = sys.argv[1]
+else:
+    settings_file = "settings.json"
+
+settings = load_settings(settings_file)
 
 
 def apply_rules(input_string):
@@ -7,7 +22,7 @@ def apply_rules(input_string):
     center = int(input_string[1], 2)
     right = int(input_string[2], 2)
     rule_key = (left << 2) | (center << 1) | right
-    return rules[rule_key]
+    return settings["rules"][str(rule_key)]
 
 def iterate_lattice(lattice):
     new_lattice = []
@@ -26,28 +41,22 @@ def find_coverage_by_window_size(lattice, max_window_size):
     """Find coverage for each window size - keeping for potential future use"""
     pass
 
-rules = {
-    0: "0",
-    1: "1",
-    2: "1",
-    3: "1",
-    4: "0",
-    5: "1",
-    6: "1",
-    7: "0"
-}
+# Get configuration from settings
+window_sizes = list(range(settings["window_sizes"]["min"], settings["window_sizes"]["max"] + 1))
+num_generations = settings["generations"]["count"]
+initial_lattice = settings["initial_state"]["pattern"]
+pic_filename = settings["output"]["picture_file"]
+num_filename = settings["output"]["numbers_file"]
 
 found_numbers = set()
-# Track coverage for window sizes 1 to 10
-window_sizes = list(range(1, 11))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 cumulative_sets = {n: set() for n in window_sizes}  # S_n(t) for each window size
 coverage_history = {n: [] for n in window_sizes}  # Coverage over time for each n
 
-lattice = "010"
-picFile = open("picture.txt", "w")
-numFile = open("numbers.txt", "w")
+lattice = initial_lattice
+picFile = open(pic_filename, "w")
+numFile = open(num_filename, "w")
 
-for generation in range(50):
+for generation in range(num_generations):
     picFile.write(lattice + "\n")
     
     # For each window size, find new patterns and update cumulative set
@@ -69,7 +78,7 @@ for generation in range(50):
 # Write coverage data to file
 # Format: each line has coverage for all window sizes at that generation
 numFile.write("# Generation coverage for window sizes: " + ",".join(map(str, window_sizes)) + "\n")
-for generation in range(50):
+for generation in range(num_generations):
     coverage_line = []
     for n in window_sizes:
         if generation < len(coverage_history[n]):

@@ -1,10 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+import sys
 
-def create_eca_visualization():
+# Load settings from JSON file
+def load_settings(settings_file="settings.json"):
+    with open(settings_file, "r") as f:
+        return json.load(f)
+
+def create_eca_visualization(settings_file="settings.json"):
     """Create a black and white visualization of the Elementary Cellular Automaton"""
+    settings = load_settings(settings_file)
+    pic_filename = settings["output"]["picture_file"]
+    
     # Read the picture file
-    with open("picture.txt", "r") as f:
+    with open(pic_filename, "r") as f:
         lines = [line.strip() for line in f.readlines() if line.strip()]
     
     # Convert to 2D array
@@ -17,10 +27,13 @@ def create_eca_visualization():
     
     return grid
 
-def create_fraction_plot():
+def create_fraction_plot(settings_file="settings.json"):
     """Create a plot of the fractional coverage over time for specific window sizes"""
+    settings = load_settings(settings_file)
+    num_filename = settings["output"]["numbers_file"]
+    
     # Read the coverage fractions file
-    with open("numbers.txt", "r") as f:
+    with open(num_filename, "r") as f:
         lines = [line.strip() for line in f.readlines() if line.strip()]
     
     # Parse header to get window sizes
@@ -48,18 +61,21 @@ def create_fraction_plot():
     
     return time_steps, coverage_data, window_sizes
 
-def create_combined_visualization():
+def create_combined_visualization(settings_file="settings.json"):
     """Create a combined visualization showing both the ECA pattern and coverage"""
+    settings = load_settings(settings_file)
+    
     # Get data from files
-    grid = create_eca_visualization()
-    time_steps, coverage_data, window_sizes = create_fraction_plot()
+    grid = create_eca_visualization(settings_file)
+    time_steps, coverage_data, window_sizes = create_fraction_plot(settings_file)
     
     # Create combined plot
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
     
     # Top plot: ECA visualization
     im = ax1.imshow(grid, cmap='binary', aspect='auto')
-    ax1.set_title('Rule 110 Elementary Cellular Automaton Pattern')
+    rule_name = f"Rules: {dict(settings['rules'])}"
+    ax1.set_title(f'Elementary Cellular Automaton Pattern - {rule_name}')
     ax1.set_xlabel('Cell Position')
     ax1.set_ylabel('Generation')
     
@@ -74,7 +90,8 @@ def create_combined_visualization():
                     'o-', linewidth=1.5, markersize=2, color=color, 
                     label=f'n={n}', alpha=0.8)
     
-    ax2.set_title('Pattern Coverage Over Time by Window Size (n=1 to 10)')
+    window_range = f"n={min(window_sizes)} to {max(window_sizes)}"
+    ax2.set_title(f'Pattern Coverage Over Time by Window Size ({window_range})')
     ax2.set_xlabel('Time Step (Generation)')
     ax2.set_ylabel('Fractional Coverage |S_n(t)| / 2^n')
     ax2.set_ylim(0, 1)
@@ -86,6 +103,12 @@ def create_combined_visualization():
     plt.show()
 
 if __name__ == "__main__":
+    # Get settings file from command line argument or use default
+    if len(sys.argv) > 1:
+        settings_file = sys.argv[1]
+    else:
+        settings_file = "settings.json"
+    
     print("Creating Rule 110 visualizations...")
-    create_combined_visualization()
+    create_combined_visualization(settings_file)
     print("Visualization saved as 'combined_visualization.png'")

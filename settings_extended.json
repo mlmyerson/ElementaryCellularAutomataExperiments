@@ -1,0 +1,31 @@
+{
+  "window_sizes": {
+    "min": 1,
+    "max": 15,
+    "description": "Extended window size range for detailed analysis"
+  },
+  "generations": {
+    "count": 25,
+    "description": "Shorter run for quick testing"
+  },
+  "rules": {
+    "0": "0",
+    "1": "1", 
+    "2": "1",
+    "3": "1",
+    "4": "0",
+    "5": "1",
+    "6": "1",
+    "7": "0",
+    "description": "Rule 110 - Turing complete"
+  },
+  "initial_state": {
+    "pattern": "0001000",
+    "description": "Centered single 1 with padding"
+  },
+  "output": {
+    "picture_file": "picture.txt",
+    "numbers_file": "numbers.txt",
+    "description": "Standard output files"
+  }
+}
