@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 import sys
+import os
 
 # Load settings from JSON file
 def load_settings(settings_file="settings.json"):
@@ -27,10 +28,12 @@ def create_eca_visualization(settings_file="settings.json"):
     
     return grid
 
-def create_fraction_plot(settings_file="settings.json"):
-    """Create a plot of the fractional coverage over time for specific window sizes"""
+def create_fraction_plot(settings_file="settings.json", numbers_file: str | None = None):
+    """Create a plot of the fractional coverage over time for specific window sizes
+    Optionally specify numbers_file to override the settings value.
+    """
     settings = load_settings(settings_file)
-    num_filename = settings["output"]["numbers_file"]
+    num_filename = numbers_file or settings["output"]["numbers_file"]
     
     # Read the coverage fractions file
     with open(num_filename, "r") as f:
@@ -61,7 +64,7 @@ def create_fraction_plot(settings_file="settings.json"):
     
     return time_steps, coverage_data, window_sizes
 
-def create_combined_visualization(settings_file="settings.json"):
+def create_combined_visualization(settings_file="settings.json", numbers_file: str | None = None):
     """Create a combined visualization showing both the ECA pattern and coverage
     Returns the output image filename.
     """
@@ -69,7 +72,7 @@ def create_combined_visualization(settings_file="settings.json"):
     
     # Get data from files
     grid = create_eca_visualization(settings_file)
-    time_steps, coverage_data, window_sizes = create_fraction_plot(settings_file)
+    time_steps, coverage_data, window_sizes = create_fraction_plot(settings_file, numbers_file)
     
     # Create combined plot
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
@@ -103,9 +106,9 @@ def create_combined_visualization(settings_file="settings.json"):
     ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     
     plt.tight_layout()
-    output_filename = f"rule_{rule_name}_visualization.png"
+    # Shortened, operation-based filename
+    output_filename = f"integercount_{rule_name}_visualization.png"
     plt.savefig(output_filename, dpi=300, bbox_inches='tight')
-    plt.show()
     return output_filename
 
 if __name__ == "__main__":
@@ -115,5 +118,12 @@ if __name__ == "__main__":
     else:
         settings_file = "settings.json"
     
-    out = create_combined_visualization(settings_file)
+    # Parse optional args after settings file: numbers file and flags
+    tail_args = sys.argv[2:]
+    numbers_file_override = next((a for a in tail_args if not a.startswith("--")), None)
+    no_show = any(a == "--no-show" for a in tail_args)
+    
+    out = create_combined_visualization(settings_file, numbers_file_override)
+    if not no_show:
+        plt.show()
     print(f"Visualization saved as '{out}'")

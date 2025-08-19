@@ -51,8 +51,9 @@ def run_experiment(settings_file: str = "settings.json", graph: bool = False) ->
 
     if graph:
         print("Creating visualizations (graph output)...")
-        subprocess.run([sys.executable, "visualize.py", settings_file], check=True)
-        print(f"Graph saved (see rule_{rule_name}_visualization.png)")
+        subprocess.run([sys.executable, "visualize.py", settings_file, numbers_out, "--no-show"], check=True)
+        # Expected output filename based on operation and rule number
+        print(f"Graph saved (see integercount_{rule_name}_visualization.png)")
     else:
         print("Skipping graph generation (use --graph to enable)")
 
