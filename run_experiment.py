@@ -1,32 +1,94 @@
 #!/usr/bin/env python3
 """
 Experiment runner for Rule Cellular Automata analysis.
-Usage: python run_experiment.py [settings_file]
+Usage:
+  python run_experiment.py [mode] [options]
+
+Modes:
+  help            Show this help message and exit (default)
+  integer-count   Run the integer coverage simulation (current functionality)
+
+Examples:
+  python run_experiment.py                             # show help by default
+  python run_experiment.py help                        # show help explicitly
+  python run_experiment.py integer-count --graph       # also generate the graph
+  python run_experiment.py -s custom_settings.json     # use a different settings file
 """
 import sys
 import subprocess
+import argparse
+import os
 
-def run_experiment(settings_file="settings.json"):
-    """Run an experiment with the specified settings file."""
-    
+
+def run_experiment(settings_file: str = "settings.json", graph: bool = False) -> None:
+    """Run an experiment with the specified settings file.
+
+    Args:
+        settings_file: Path to the JSON settings file.
+        graph: When True, also generate the visualization after simulation.
+    """
+    # Validate settings file early for clearer errors
+    if not os.path.exists(settings_file):
+        raise FileNotFoundError(settings_file)
+
     print(f"Using settings from: {settings_file}")
-    
+
     print("Running cellular automaton simulation...")
     subprocess.run([sys.executable, "simulation.py", settings_file], check=True)
-    
-    print("Creating visualizations...")
-    subprocess.run([sys.executable, "visualize.py", settings_file], check=True)
-    
+
+    if graph:
+        print("Creating visualizations (graph output)...")
+        subprocess.run([sys.executable, "visualize.py", settings_file], check=True)
+        print("Graph saved (see combined_visualization.png)")
+    else:
+        print("Skipping graph generation (use --graph to enable)")
+
     print("Experiment complete!")
 
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run Elementary Cellular Automata experiments and optional visualization.",
+    )
+
+    # Positional mode allows future expansion; defaults to showing help for new users
+    parser.add_argument(
+        "mode",
+        nargs="?",
+        choices=["help", "integer-count"],
+        default="help",
+        help="Operation mode. Use 'help' to see options or 'integer-count' to run the simulation.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--settings",
+        default="settings.json",
+        help="Path to the settings JSON file (default: settings.json)",
+    )
+
+    parser.add_argument(
+        "--graph",
+        action="store_true",
+        help="Also output a combined visualization graph (in addition to result files)",
+    )
+
+    return parser
+
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        settings_file = sys.argv[1]
-    else:
-        settings_file = "settings.json"
-    
+    parser = build_parser()
+    args = parser.parse_args()
+
     try:
-        run_experiment(settings_file)
+        if args.mode == "help":
+            parser.print_help()
+            sys.exit(0)
+        elif args.mode == "integer-count":
+            run_experiment(settings_file=args.settings, graph=bool(args.graph))
+        else:
+            # This branch should not be reachable due to choices constraint
+            parser.error(f"Unknown mode: {args.mode}")
     except subprocess.CalledProcessError as e:
         print(f"Error running experiment: {e}")
         sys.exit(1)
