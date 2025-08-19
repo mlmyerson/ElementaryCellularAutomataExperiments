@@ -6,14 +6,13 @@ Usage:
 
 Modes:
   help            Show this help message and exit (default)
-  integer-count   Run the integer coverage simulation (current functionality)
+  integer-count   Run the integer coverage simulation
 
 Examples:
   python run_experiment.py                             # show help by default
   python run_experiment.py help                        # show help explicitly
-  python run_experiment.py integer-count --graph       # also generate the graph
-  python run_experiment.py -s custom_settings.json     # use a different settings file
-  python run_experiment.py integer-count -s settings_a.json settings_b.json  # batch run
+  python run_experiment.py integer-count -s settings_a.json  # single run
+  python run_experiment.py integer-count --graph -s settings_a.json settings_b.json  # batch with graphs
 """
 import sys
 import subprocess
@@ -22,7 +21,7 @@ import os
 import json
 
 
-def run_experiment(settings_file: str = "settings.json", graph: bool = False) -> None:
+def run_experiment(settings_file: str, graph: bool = False) -> None:
     """Run an experiment with the specified settings file.
 
     Args:
@@ -78,7 +77,6 @@ def build_parser() -> argparse.ArgumentParser:
         "-s",
         "--settings",
         nargs="+",
-        default=["settings.json"],
         help="One or more settings JSON files (supports shell globs)",
     )
 
@@ -100,6 +98,8 @@ if __name__ == "__main__":
             parser.print_help()
             sys.exit(0)
         elif args.mode == "integer-count":
+            if not args.settings:
+                parser.error("--settings is required for 'integer-count' and accepts one or more files")
             settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
             for sfile in settings_list:
                 run_experiment(settings_file=sfile, graph=bool(args.graph))
