@@ -13,6 +13,7 @@ Examples:
   python run_experiment.py help                        # show help explicitly
   python run_experiment.py integer-count --graph       # also generate the graph
   python run_experiment.py -s custom_settings.json     # use a different settings file
+  python run_experiment.py integer-count -s settings_a.json settings_b.json  # batch run
 """
 import sys
 import subprocess
@@ -75,8 +76,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-s",
         "--settings",
-        default="settings.json",
-        help="Path to the settings JSON file (default: settings.json)",
+        nargs="+",
+        default=["settings.json"],
+        help="One or more settings JSON files (supports shell globs)",
     )
 
     parser.add_argument(
@@ -97,7 +99,9 @@ if __name__ == "__main__":
             parser.print_help()
             sys.exit(0)
         elif args.mode == "integer-count":
-            run_experiment(settings_file=args.settings, graph=bool(args.graph))
+            settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
+            for sfile in settings_list:
+                run_experiment(settings_file=sfile, graph=bool(args.graph))
         else:
             # This branch should not be reachable due to choices constraint
             parser.error(f"Unknown mode: {args.mode}")
@@ -106,8 +110,4 @@ if __name__ == "__main__":
         sys.exit(1)
     except FileNotFoundError as e:
         print(f"Settings file not found: {e}")
-        print("Available settings files:")
-        import glob
-        for f in glob.glob("settings*.json"):
-            print(f"  - {f}")
         sys.exit(1)
