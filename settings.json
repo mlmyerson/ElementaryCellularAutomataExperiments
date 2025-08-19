@@ -23,7 +23,7 @@
     "description": "Initial lattice configuration"
   },
   "output": {
-    "picture_file": "picture.txt",
+    "picture_file": "ca_pattern.txt",
     "numbers_file": "numbers.txt",
     "description": "Output file names for lattice patterns and coverage data"
   }

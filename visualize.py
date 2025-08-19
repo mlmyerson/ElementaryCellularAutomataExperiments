@@ -62,7 +62,9 @@ def create_fraction_plot(settings_file="settings.json"):
     return time_steps, coverage_data, window_sizes
 
 def create_combined_visualization(settings_file="settings.json"):
-    """Create a combined visualization showing both the ECA pattern and coverage"""
+    """Create a combined visualization showing both the ECA pattern and coverage
+    Returns the output image filename.
+    """
     settings = load_settings(settings_file)
     
     # Get data from files
@@ -101,8 +103,10 @@ def create_combined_visualization(settings_file="settings.json"):
     ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     
     plt.tight_layout()
-    plt.savefig('combined_visualization.png', dpi=300, bbox_inches='tight')
+    output_filename = f"rule_{rule_name}_visualization.png"
+    plt.savefig(output_filename, dpi=300, bbox_inches='tight')
     plt.show()
+    return output_filename
 
 if __name__ == "__main__":
     # Get settings file from command line argument or use default
@@ -111,5 +115,5 @@ if __name__ == "__main__":
     else:
         settings_file = "settings.json"
     
-    create_combined_visualization(settings_file)
-    print("Visualization saved as 'combined_visualization.png'")
+    out = create_combined_visualization(settings_file)
+    print(f"Visualization saved as '{out}'")

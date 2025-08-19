@@ -18,6 +18,7 @@ import sys
 import subprocess
 import argparse
 import os
+import json
 
 
 def run_experiment(settings_file: str = "settings.json", graph: bool = False) -> None:
@@ -33,13 +34,24 @@ def run_experiment(settings_file: str = "settings.json", graph: bool = False) ->
 
     print(f"Using settings from: {settings_file}")
 
+    # Compute rule number up front for naming outputs
+    with open(settings_file, "r") as f:
+        s = json.load(f)
+    rule_binary = ''.join([s['rules'][str(i)] for i in range(7, -1, -1)])
+    rule_name = int(rule_binary, 2)
+
+    numbers_out = f"integercount_{rule_name}.txt"
+
     print("Running cellular automaton simulation...")
-    subprocess.run([sys.executable, "simulation.py", settings_file], check=True)
+    # Pass settings and numbers override to simulation
+    subprocess.run([sys.executable, "simulation.py", settings_file, numbers_out], check=True)
+
+    print(f"Results saved: {numbers_out} and {s['output']['picture_file']}")
 
     if graph:
         print("Creating visualizations (graph output)...")
         subprocess.run([sys.executable, "visualize.py", settings_file], check=True)
-        print("Graph saved (see combined_visualization.png)")
+        print(f"Graph saved (see rule_{rule_name}_visualization.png)")
     else:
         print("Skipping graph generation (use --graph to enable)")
 
