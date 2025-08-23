@@ -61,6 +61,10 @@ picFile = open(pic_filename, "w")
 numFile = open(num_filename, "w")
 states = {}
 
+# Initialize states dictionary for each window size
+for n in window_sizes:
+    states[n] = {}
+
 # Compute pattern
 for generation in range(num_generations):
     picFile.write(lattice + "\n")
@@ -68,20 +72,25 @@ for generation in range(num_generations):
     # For each window size, find new patterns and update cumulative set
     for n in window_sizes:
         if n <= len(lattice):  # Only process if window fits in lattice
-            # Add new window as key
-            states[n] = {}
             # Slide window of size n across the current lattice
             for i in range(len(lattice) - n + 1):
                 window_bits = lattice[i:i + n]
-                # Add to the bit-pattern count
-                states[n][window_bits] += 1
+                # Count the bit pattern state
+                if window_bits in states[n]:
+                    states[n][window_bits] += 1
+                else:
+                    states[n][window_bits] = 1  # Start count at 1, not 0
     lattice = iterate_lattice(lattice)
 
 # Format: each line has states count for all window sizes
 numFile.write("# State count for window sizes: " + ",".join(map(str, window_sizes)) + "\n")
-for generation in range(num_generations):
-    for window, states in states:
-        numFile.write(",".join(states) + "\n")
+for window_size in window_sizes:
+    if window_size in states:
+        numFile.write(f"Window size {window_size}: ")
+        pattern_counts = []
+        for pattern, count in states[window_size].items():
+            pattern_counts.append(f"{pattern}={count}")
+        numFile.write(",".join(pattern_counts) + "\n")
 
 picFile.close()
 numFile.close()

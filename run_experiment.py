@@ -54,6 +54,7 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
             print("Skipping graph generation (use --graph to enable)")
 
     elif args.mode == "debrujin":
+        numbers_out = f"debrujin_{rule_name}.txt"
         subprocess.run([sys.executable, "debrujin/debrujin_simulation.py", settings_file, numbers_out], check=True)
 
 
@@ -110,6 +111,7 @@ if __name__ == "__main__":
         elif args.mode == "debrujin":
             if not args.settings:
                 parser.error("--settings is required for 'debrujin' and accepts one or more files")
+            settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
             for sfile in settings_list:
                 run_experiment(settings_file=sfile, graph=bool(args.graph))
 
