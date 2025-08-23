@@ -7,6 +7,7 @@ Usage:
 Modes:
   help            Show this help message and exit (default)
   integer-count   Run the integer coverage simulation
+  debrujin        Run the debrujin graph simulation
 
 Examples:
   python run_experiment.py                             # show help by default
@@ -40,21 +41,24 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
     rule_binary = ''.join([s['rules'][str(i)] for i in range(7, -1, -1)])
     rule_name = int(rule_binary, 2)
 
-    numbers_out = f"integercount_{rule_name}.txt"
-
     print("Running cellular automaton simulation...")
-    # Pass settings and numbers override to simulation
-    subprocess.run([sys.executable, "integercount/integercount_simulation.py", settings_file, numbers_out], check=True)
+    if args.mode == "integer-count":
+        numbers_out = f"integercount_{rule_name}.txt"
+        subprocess.run([sys.executable, "integercount/integercount_simulation.py", settings_file, numbers_out], check=True)
+
+        if graph:
+            print("Creating visualizations (graph output)...")
+            subprocess.run([sys.executable, "integercount/integercount_visualize.py", settings_file, numbers_out, "--no-show"], check=True)
+            print(f"Graph saved (see integercount_{rule_name}_visualization.png)")
+        else:
+            print("Skipping graph generation (use --graph to enable)")
+
+    elif args.mode == "debrujin":
+        subprocess.run([sys.executable, "debrujin/debrujin_simulation.py", settings_file, numbers_out], check=True)
+
 
     print(f"Results saved: {numbers_out} and {s['output']['picture_file']}")
 
-    if graph:
-        print("Creating visualizations (graph output)...")
-        subprocess.run([sys.executable, "integercount/integercount_visualize.py", settings_file, numbers_out, "--no-show"], check=True)
-        # Expected output filename based on operation and rule number
-        print(f"Graph saved (see integercount_{rule_name}_visualization.png)")
-    else:
-        print("Skipping graph generation (use --graph to enable)")
 
     print("Experiment complete!")
 
@@ -68,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "mode",
         nargs="?",
-        choices=["help", "integer-count"],
+        choices=["help", "integer-count", "debrujin"],
         default="help",
         help="Operation mode. Use 'help' to see options or 'integer-count' to run the simulation.",
     )
@@ -103,6 +107,12 @@ if __name__ == "__main__":
             settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
             for sfile in settings_list:
                 run_experiment(settings_file=sfile, graph=bool(args.graph))
+        elif args.mode == "debrujin":
+            if not args.settings:
+                parser.error("--settings is required for 'debrujin' and accepts one or more files")
+            for sfile in settings_list:
+                run_experiment(settings_file=sfile, graph=bool(args.graph))
+
         else:
             # This branch should not be reachable due to choices constraint
             parser.error(f"Unknown mode: {args.mode}")
