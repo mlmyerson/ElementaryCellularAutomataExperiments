@@ -44,7 +44,7 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
 
     print("Running cellular automaton simulation...")
     # Pass settings and numbers override to simulation
-    subprocess.run([sys.executable, "simulation.py", settings_file, numbers_out], check=True)
+    subprocess.run([sys.executable, "integercount_simulation.py", settings_file, numbers_out], check=True)
 
     print(f"Results saved: {numbers_out} and {s['output']['picture_file']}")
 
