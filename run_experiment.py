@@ -44,13 +44,13 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
 
     print("Running cellular automaton simulation...")
     # Pass settings and numbers override to simulation
-    subprocess.run([sys.executable, "integercount_simulation.py", settings_file, numbers_out], check=True)
+    subprocess.run([sys.executable, "integercount/integercount_simulation.py", settings_file, numbers_out], check=True)
 
     print(f"Results saved: {numbers_out} and {s['output']['picture_file']}")
 
     if graph:
         print("Creating visualizations (graph output)...")
-        subprocess.run([sys.executable, "integercount_visualize.py", settings_file, numbers_out, "--no-show"], check=True)
+        subprocess.run([sys.executable, "integercount/integercount_visualize.py", settings_file, numbers_out, "--no-show"], check=True)
         # Expected output filename based on operation and rule number
         print(f"Graph saved (see integercount_{rule_name}_visualization.png)")
     else:
