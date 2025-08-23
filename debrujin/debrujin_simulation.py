@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import networkx as nx
 import json
 import sys
 
@@ -59,38 +60,49 @@ initial_lattice = ('0' * padding_left) + initial_pattern + ('0' * padding_right)
 lattice = initial_lattice
 picFile = open(pic_filename, "w")
 numFile = open(num_filename, "w")
-states = {}
 
-# Initialize states dictionary for each window size
+# Initialize de Bruijn graphs for each window size
+graphs = {}
 for n in window_sizes:
-    states[n] = {}
+    graphs[n] = nx.DiGraph()
 
 # Compute pattern
 for generation in range(num_generations):
     picFile.write(lattice + "\n")
 
-    # For each window size, find new patterns and update cumulative set
+    # For each window size, build de Bruijn graph edges
     for n in window_sizes:
-        if n <= len(lattice):  # Only process if window fits in lattice
-            # Slide window of size n across the current lattice
-            for i in range(len(lattice) - n + 1):
-                window_bits = lattice[i:i + n]
-                # Count the bit pattern state
-                if window_bits in states[n]:
-                    states[n][window_bits] += 1
+        if n < len(lattice):  # Need at least n+1 length for edges
+            # Slide window to create edges in de Bruijn graph
+            for i in range(len(lattice) - n):
+                source_pattern = lattice[i:i + n]        # n-bit source node
+                target_pattern = lattice[i + 1:i + n + 1] # n-bit target node
+                edge_pattern = lattice[i:i + n + 1]       # (n+1)-bit edge label
+                
+                # Add edge to de Bruijn graph with frequency counting
+                if graphs[n].has_edge(source_pattern, target_pattern):
+                    graphs[n][source_pattern][target_pattern]['weight'] += 1
                 else:
-                    states[n][window_bits] = 1  # Start count at 1, not 0
+                    graphs[n].add_edge(source_pattern, target_pattern, 
+                                     weight=1, label=edge_pattern)
     lattice = iterate_lattice(lattice)
 
-# Format: each line has states count for all window sizes
-numFile.write("# State count for window sizes: " + ",".join(map(str, window_sizes)) + "\n")
+# Format: output de Bruijn graph statistics for each window size
+numFile.write("# De Bruijn graph statistics for window sizes: " + ",".join(map(str, window_sizes)) + "\n")
 for window_size in window_sizes:
-    if window_size in states:
-        numFile.write(f"Window size {window_size}: ")
-        pattern_counts = []
-        for pattern, count in states[window_size].items():
-            pattern_counts.append(f"{pattern}={count}")
-        numFile.write(",".join(pattern_counts) + "\n")
+    if window_size in graphs:
+        graph = graphs[window_size]
+        numFile.write(f"Window size {window_size}:\n")
+        numFile.write(f"  Nodes: {graph.number_of_nodes()}\n")
+        numFile.write(f"  Edges: {graph.number_of_edges()}\n")
+        
+        # Write edge information with weights
+        numFile.write(f"  Edge transitions:\n")
+        for source, target, data in graph.edges(data=True):
+            weight = data.get('weight', 1)
+            label = data.get('label', '')
+            numFile.write(f"    {source} -> {target} (weight: {weight}, pattern: {label})\n")
+        numFile.write("\n")
 
 picFile.close()
 numFile.close()
