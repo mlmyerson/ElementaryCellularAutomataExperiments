@@ -19,7 +19,6 @@ numbers_output_override = sys.argv[2] if len(sys.argv) > 2 else None
 
 settings = load_settings(settings_file)
 
-
 def apply_rules(input_string):
     left = int(input_string[0], 2)
     center = int(input_string[1], 2)
@@ -39,10 +38,6 @@ def iterate_lattice(lattice):
     
     return ''.join(new_lattice)
 
-def find_coverage_by_window_size(lattice, max_window_size):
-    """Find coverage for each window size - keeping for potential future use"""
-    pass
-
 # Get configuration from settings
 window_sizes = settings["window_sizes"]["sizes"]
 num_generations = settings["generations"]["count"]
@@ -60,7 +55,6 @@ padding_left = padding_per_side
 padding_right = total_width - pattern_length - padding_left
 initial_lattice = ('0' * padding_left) + initial_pattern + ('0' * padding_right)
 
-found_numbers = set()
 cumulative_sets = {n: set() for n in window_sizes}  # S_n(t) for each window size
 coverage_history = {n: [] for n in window_sizes}  # Coverage over time for each n
 
