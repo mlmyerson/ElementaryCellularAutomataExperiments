@@ -1,6 +1,6 @@
 {
   "window_sizes": {
-    "sizes": [1, 2, 3, 4, 7, 11, 18, 29],
+    "sizes": [1, 2, 3, 4, 7, 11, 14, 18, 29],
     "description": "Specific window sizes to analyze for pattern coverage"
   },
   "generations": {
