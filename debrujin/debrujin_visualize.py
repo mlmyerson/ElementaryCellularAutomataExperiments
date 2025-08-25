@@ -34,13 +34,13 @@ def parse_debruijn_data(numbers_file):
     graphs_data = {}
     
     with open(numbers_file, "r") as f:
-        lines = [line.strip() for line in f.readlines()]
+        lines = f.readlines()
     
     current_window_size = None
     i = 1  # Skip header line
     
     while i < len(lines):
-        line = lines[i]
+        line = lines[i].rstrip('\n')  # Keep leading spaces, just remove newline
         
         if line.startswith("Window size "):
             current_window_size = int(line.split()[2].rstrip(':'))
@@ -61,26 +61,30 @@ def parse_debruijn_data(numbers_file):
             
         elif line.startswith("  Edge transitions:"):
             i += 1
-            # Parse transitions
-            while i < len(lines) and lines[i].startswith("    "):
-                transition_line = lines[i].strip()
-                # Parse: "source -> target (weight: X, pattern: Y)"
-                parts = transition_line.split(" -> ")
-                source = parts[0]
-                rest = parts[1].split(" (weight: ")
-                target = rest[0]
-                weight_and_pattern = rest[1].rstrip(')')
-                weight_part, pattern_part = weight_and_pattern.split(", pattern: ")
-                weight = int(weight_part)
-                pattern = pattern_part
-                
-                graphs_data[current_window_size]['transitions'].append({
-                    'source': source,
-                    'target': target,
-                    'weight': weight,
-                    'pattern': pattern
-                })
-                i += 1
+            # Parse transitions - look for lines that start with 4 spaces
+            while i < len(lines):
+                transition_line = lines[i].rstrip('\n')
+                if transition_line.startswith("    ") and " -> " in transition_line:
+                    # Parse: "    source -> target (weight: X, pattern: Y)"
+                    clean_line = transition_line.strip()
+                    parts = clean_line.split(" -> ")
+                    source = parts[0]
+                    rest = parts[1].split(" (weight: ")
+                    target = rest[0]
+                    weight_and_pattern = rest[1].rstrip(')')
+                    weight_part, pattern_part = weight_and_pattern.split(", pattern: ")
+                    weight = int(weight_part)
+                    pattern = pattern_part
+                    
+                    graphs_data[current_window_size]['transitions'].append({
+                        'source': source,
+                        'target': target,
+                        'weight': weight,
+                        'pattern': pattern
+                    })
+                    i += 1
+                else:
+                    break  # End of transitions for this window size
         else:
             i += 1
     
@@ -108,12 +112,43 @@ def visualize_single_graph(G, window_size, ax):
     # Use different layouts based on graph size
     if G.number_of_nodes() <= 8:
         pos = nx.spring_layout(G, k=2, iterations=50)
+        # Draw labels
+        nx.draw_networkx_labels(G, pos, ax=ax, font_size=8)
+        # Draw nodes
+        nx.draw_networkx_nodes(G, pos, ax=ax, node_color='lightblue', 
+            node_size=800, alpha=0.7)
     else:
         pos = nx.circular_layout(G)
+        
+        # Add directional labels for a few representative nodes
+        nodes = list(G.nodes())
+        num_nodes = len(nodes)
+        
+        # Sort nodes to get binary counting order
+        try:
+            # Sort by binary value (convert to int) if all nodes are binary strings
+            sorted_nodes = sorted(nodes, key=lambda x: int(x, 2))
+        except ValueError:
+            # Fallback to alphabetical sort if not all binary
+            sorted_nodes = sorted(nodes)
+        
+        # Show labels for every 4th node (or fewer if small graph)
+        label_interval = max(1, num_nodes // 6)  # Show ~6 labels max
+        labels_to_show = {}
+        
+        for i in range(0, num_nodes, label_interval):
+            if i < len(sorted_nodes):
+                node = sorted_nodes[i]
+                labels_to_show[node] = node
+        
+        # Also always show the first and last nodes for reference
+        if sorted_nodes:
+            labels_to_show[sorted_nodes[0]] = sorted_nodes[0]
+            labels_to_show[sorted_nodes[-1]] = sorted_nodes[-1]
+        
+        # Draw the selected labels
+        nx.draw_networkx_labels(G, pos, labels_to_show, ax=ax, font_size=6)
     
-    # Draw nodes
-    nx.draw_networkx_nodes(G, pos, ax=ax, node_color='lightblue', 
-                          node_size=800, alpha=0.7)
     
     # Draw edges with weights affecting thickness
     edges = G.edges(data=True)
@@ -128,8 +163,6 @@ def visualize_single_graph(G, window_size, ax):
                              edge_color='gray', arrows=True,
                              arrowsize=15)
     
-    # Draw labels
-    nx.draw_networkx_labels(G, pos, ax=ax, font_size=8)
     
     # Add title with statistics
     ax.set_title(f"de Bruijn Graph (n={window_size})\n"
