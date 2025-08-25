@@ -22,11 +22,12 @@ import os
 import json
 
 
-def run_experiment(settings_file: str, graph: bool = False) -> None:
+def run_experiment(settings_file: str, mode: str, graph: bool = False) -> None:
     """Run an experiment with the specified settings file.
 
     Args:
         settings_file: Path to the JSON settings file.
+        mode: The experiment mode ('integer-count' or 'debrujin').
         graph: When True, also generate the visualization after simulation.
     """
     # Validate settings file early for clearer errors
@@ -42,7 +43,7 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
     rule_name = int(rule_binary, 2)
 
     print("Running cellular automaton simulation...")
-    if args.mode == "integer-count":
+    if mode == "integer-count":
         numbers_out = f"integercount_{rule_name}.txt"
         subprocess.run([sys.executable, "integercount/integercount_simulation.py", settings_file, numbers_out], check=True)
 
@@ -53,10 +54,16 @@ def run_experiment(settings_file: str, graph: bool = False) -> None:
         else:
             print("Skipping graph generation (use --graph to enable)")
 
-    elif args.mode == "debrujin":
+    elif mode == "debrujin":
         numbers_out = f"debrujin_{rule_name}.txt"
         subprocess.run([sys.executable, "debrujin/debrujin_simulation.py", settings_file, numbers_out], check=True)
 
+        if graph:
+            print("Creating visualizations (graph output)...")
+            subprocess.run([sys.executable, "debrujin/debrujin_visualize.py", settings_file, numbers_out, "--no-show"], check=True)
+            print(f"Graph saved (see debrujin_{rule_name}_visualization.png)")
+        else:
+            print("Skipping graph generation (use --graph to enable)")
 
     print(f"Results saved: {numbers_out} and {s['output']['picture_file']}")
 
@@ -107,13 +114,13 @@ if __name__ == "__main__":
                 parser.error("--settings is required for 'integer-count' and accepts one or more files")
             settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
             for sfile in settings_list:
-                run_experiment(settings_file=sfile, graph=bool(args.graph))
+                run_experiment(settings_file=sfile, mode="integer-count", graph=bool(args.graph))
         elif args.mode == "debrujin":
             if not args.settings:
                 parser.error("--settings is required for 'debrujin' and accepts one or more files")
             settings_list = args.settings if isinstance(args.settings, list) else [args.settings]
             for sfile in settings_list:
-                run_experiment(settings_file=sfile, graph=bool(args.graph))
+                run_experiment(settings_file=sfile, mode="debrujin", graph=bool(args.graph))
 
         else:
             # This branch should not be reachable due to choices constraint
