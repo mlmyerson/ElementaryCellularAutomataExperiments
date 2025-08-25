@@ -101,7 +101,7 @@ def create_networkx_graph(transitions):
     
     return G
 
-def visualize_single_graph(G, window_size, ax):
+def visualize_single_graph(G, window_size, ax, num_generations=50):
     """Visualize a single de Bruijn graph"""
     if G.number_of_nodes() == 0:
         ax.text(0.5, 0.5, f"No data for n={window_size}", 
@@ -111,7 +111,9 @@ def visualize_single_graph(G, window_size, ax):
     
     # Use different layouts based on graph size
     if G.number_of_nodes() <= 8:
-        pos = nx.spring_layout(G, k=2, iterations=50)
+        # Use actual number of generations for layout iterations
+        iterations = max(30, min(num_generations, 100))  # Between 30-100 iterations
+        pos = nx.spring_layout(G, k=2, iterations=iterations)
         # Draw labels
         nx.draw_networkx_labels(G, pos, ax=ax, font_size=8)
         # Draw nodes
@@ -182,6 +184,9 @@ def create_combined_visualization(settings_file="settings.json", numbers_file=No
     # Parse de Bruijn data
     graphs_data = parse_debruijn_data(num_filename)
     
+    # Get number of generations from settings
+    num_generations = settings["generations"]["count"]
+    
     # Convert rules dictionary to rule number
     rule_binary = ''.join([settings['rules'][str(i)] for i in range(7, -1, -1)])
     rule_name = int(rule_binary, 2)
@@ -227,7 +232,7 @@ def create_combined_visualization(settings_file="settings.json", numbers_file=No
         if i < len(graph_axes):
             transitions = graphs_data[window_size]['transitions']
             G = create_networkx_graph(transitions)
-            visualize_single_graph(G, window_size, graph_axes[i])
+            visualize_single_graph(G, window_size, graph_axes[i], num_generations)
     
     plt.tight_layout()
     
